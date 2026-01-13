@@ -1,7 +1,16 @@
 import * as winston from 'winston';
 import { WinstonModule } from 'nest-winston';
+import * as fs from 'fs';
+
+// Create logs directory if it doesn't exist
+if (!fs.existsSync('logs')) {
+  fs.mkdirSync('logs');
+}
+
+const logLevel = process.env.NODE_ENV === 'production' ? 'warn' : 'debug';
 
 export const winstonConfig = WinstonModule.createLogger({
+  level: logLevel,
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(
