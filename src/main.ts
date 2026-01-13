@@ -11,8 +11,8 @@ async function bootstrap() {
   });
   
   app.useGlobalFilters(
-    new GlobalExceptionFilter(),
-    new ValidationExceptionFilter(),
+    new ValidationExceptionFilter(),  // More specific first
+    new GlobalExceptionFilter(),      // More general last
   );
   app.useGlobalInterceptors(new LoggingInterceptor());
   

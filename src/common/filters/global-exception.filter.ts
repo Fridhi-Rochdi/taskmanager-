@@ -37,19 +37,33 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       // Handle TypeORM database errors
       status = HttpStatus.BAD_REQUEST;
       const dbError = exception as any;
+      const isProduction = process.env.NODE_ENV === 'production';
 
       if (dbError.code === '23505') {
         // Unique constraint violation
         error = 'Duplicate Entry';
-        message = 'A record with this value already exists';
+        if (!isProduction && dbError.detail) {
+          // Extract field name from error detail
+          const fieldMatch = dbError.detail.match(/Key \((\w+)\)/);
+          const field = fieldMatch ? fieldMatch[1] : 'value';
+          message = `${field} already exists`;
+        } else {
+          message = 'A record with this value already exists';
+        }
       } else if (dbError.code === '23503') {
         // Foreign key constraint violation
         error = 'Foreign Key Violation';
-        message = 'Referenced record does not exist';
+        message = isProduction
+          ? 'Referenced record does not exist'
+          : dbError.detail || 'Referenced record does not exist';
       } else if (dbError.code === '23502') {
         // Not null constraint violation
         error = 'Missing Required Field';
-        message = 'A required field is missing';
+        if (!isProduction && dbError.column) {
+          message = `Field '${dbError.column}' is required`;
+        } else {
+          message = 'A required field is missing';
+        }
       } else {
         error = 'Database Error';
         message = 'A database error occurred';
