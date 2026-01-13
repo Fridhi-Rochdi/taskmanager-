@@ -24,10 +24,19 @@ export class UsersService {
     return await this.usersRepository.save(user);
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.usersRepository.find({
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{ data: User[]; total: number }> {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.usersRepository.findAndCount({
       order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
     });
+
+    return { data, total };
   }
 
   async findOne(id: string): Promise<User> {
