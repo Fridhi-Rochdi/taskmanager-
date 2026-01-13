@@ -46,10 +46,15 @@ export class MetricsService {
           ).toFixed(2)
         : 0;
 
-    const uptime = Math.floor((Date.now() - this.startTime) / 1000);
+    const uptimeSeconds = Math.floor((Date.now() - this.startTime) / 1000);
+    const hours = Math.floor(uptimeSeconds / 3600);
+    const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+    const seconds = uptimeSeconds % 60;
+    const uptimeFormatted = `${hours}h ${minutes}m ${seconds}s`;
 
     return {
-      uptime: `${uptime}s`,
+      uptime: uptimeFormatted,
+      uptimeSeconds,
       totalRequests: this.metrics.totalRequests,
       requestsByMethod: this.metrics.requestsByMethod,
       errorsByStatus: this.metrics.errorsByStatus,

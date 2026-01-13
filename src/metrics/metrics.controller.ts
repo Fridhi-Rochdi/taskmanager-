@@ -1,4 +1,11 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Headers,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { MetricsService } from './metrics.service';
 
 @Controller('metrics')
@@ -7,7 +14,13 @@ export class MetricsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getMetrics() {
+  getMetrics(@Headers('x-api-key') apiKey: string) {
+    const expectedApiKey = process.env.METRICS_API_KEY;
+    
+    if (!expectedApiKey || apiKey !== expectedApiKey) {
+      throw new UnauthorizedException('Invalid or missing API key');
+    }
+    
     return this.metricsService.getMetrics();
   }
 }
