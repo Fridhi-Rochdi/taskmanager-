@@ -77,6 +77,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       statusCode: status,
       error,
       message,
+      traceId: request.traceId || 'no-trace-id',
+      requestId: request.requestId || 'no-request-id',
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
@@ -89,6 +91,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     this.logger.error({
       message: 'Exception caught',
+      traceId: request.traceId || 'no-trace-id',
+      requestId: request.requestId || 'no-request-id',
       statusCode: status,
       error,
       path: request.url,

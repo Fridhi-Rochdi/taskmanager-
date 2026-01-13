@@ -30,10 +30,14 @@ export class LoggingInterceptor implements NestInterceptor {
     const { method, url, body } = request;
     const userAgent = request.get('user-agent') || '';
     const ip = request.ip || request.connection?.remoteAddress || 'unknown';
+    const traceId = request.traceId || 'no-trace-id';
+    const requestId = request.requestId || 'no-request-id';
     const startTime = Date.now();
 
     this.logger.log({
       message: 'Incoming Request',
+      traceId,
+      requestId,
       method,
       url,
       ip,
@@ -50,6 +54,8 @@ export class LoggingInterceptor implements NestInterceptor {
 
           this.logger.log({
             message: 'Request Completed',
+            traceId,
+            requestId,
             method,
             url,
             ip,
@@ -62,6 +68,8 @@ export class LoggingInterceptor implements NestInterceptor {
 
           this.logger.error({
             message: 'Request Failed',
+            traceId,
+            requestId,
             method,
             url,
             ip,
