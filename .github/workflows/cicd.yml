@@ -197,17 +197,17 @@ jobs:
           echo "========================================"
           echo "Starting application stack..."
           echo "========================================"
-          docker-compose up -d
+          docker compose up -d
           echo "Waiting for containers to initialize..."
           sleep 20
           
       - name: Check Docker Compose status
         run: |
           echo "Checking running containers..."
-          docker-compose ps
+          docker compose ps
           echo ""
           echo "Checking application logs..."
-          docker-compose logs --tail=50
+          docker compose logs --tail=50
 
       - name: Wait for API health check
         run: |
@@ -229,10 +229,10 @@ jobs:
           echo "ERROR: API failed to start after 90s"
           echo "========================================"
           echo "Container status:"
-          docker-compose ps
+          docker compose ps
           echo ""
           echo "Application logs:"
-          docker-compose logs
+          docker compose logs
           exit 1
 
       - name: Run OWASP ZAP Baseline Scan
@@ -287,7 +287,7 @@ jobs:
           echo "========================================"
           echo "FAILURE: Displaying all container logs"
           echo "========================================"
-          docker-compose logs --timestamps
+          docker compose logs --timestamps
 
       - name: Stop Docker Compose
         if: always()
@@ -295,7 +295,7 @@ jobs:
           echo "========================================"
           echo "Stopping application stack..."
           echo "========================================"
-          docker-compose down -v
+          docker compose down -v
           docker system prune -f
           echo "Cleanup completed successfully"
 
