@@ -3,12 +3,12 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: taskmanager-db
+    container_name: enterprise-api-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_DATABASE:-taskmanager}
+      POSTGRES_DB: ${DB_DATABASE:-user_platform_db}
       TZ: Europe/Paris
     ports:
       - "5432:5432"
@@ -27,7 +27,7 @@ services:
         reservations:
           memory: 256M
     networks:
-      - taskmanager-network
+      - enterprise-network
 
   app:
     build:
@@ -35,7 +35,7 @@ services:
       dockerfile: Dockerfile
       args:
         NODE_VERSION: 20
-    container_name: taskmanager-app
+    container_name: enterprise-api-app
     restart: unless-stopped
     environment:
       NODE_ENV: ${NODE_ENV:-production}
@@ -55,12 +55,12 @@ services:
     volumes:
       - ./logs:/app/logs
     networks:
-      - taskmanager-network
+      - enterprise-network
 
 volumes:
   postgres_data:
     driver: local
 
 networks:
-  taskmanager-network:
+  enterprise-network:
     driver: bridge

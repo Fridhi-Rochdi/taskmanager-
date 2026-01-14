@@ -199,7 +199,7 @@ jobs:
           DB_PORT=5432
           DB_USERNAME=testuser
           DB_PASSWORD=testpassword123
-          DB_DATABASE=taskmanager_test
+          DB_DATABASE=user_platform_test
           NODE_ENV=test
           PORT=3000
           METRICS_API_KEY=test-api-key-for-ci

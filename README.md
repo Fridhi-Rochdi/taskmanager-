@@ -107,7 +107,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
-DB_DATABASE=taskmanager
+DB_DATABASE=user_platform_db
 
 # Application
 NODE_ENV=development
