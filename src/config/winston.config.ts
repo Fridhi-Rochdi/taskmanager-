@@ -16,10 +16,14 @@ export const winstonConfig = WinstonModule.createLogger({
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.colorize(),
-        winston.format.printf(({ timestamp, level, message, context, ...meta }) => {
-          const metaString = Object.keys(meta).length ? JSON.stringify(meta) : '';
-          return `${timestamp} [${context || 'Application'}] ${level}: ${message} ${metaString}`;
-        }),
+        winston.format.printf(
+          ({ timestamp, level, message, context, ...meta }) => {
+            const metaString = Object.keys(meta).length
+              ? JSON.stringify(meta)
+              : '';
+            return `${timestamp} [${context || 'Application'}] ${level}: ${message} ${metaString}`;
+          },
+        ),
       ),
     }),
     new winston.transports.File({
