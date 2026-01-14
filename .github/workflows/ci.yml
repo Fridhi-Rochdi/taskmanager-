@@ -61,7 +61,6 @@ jobs:
       # Étape 1.4: Vérification ESLint (qualité du code)
       - name: 🧹 Run ESLint
         run: npm run lint:check
-        continue-on-error: false  # Échec si erreurs ESLint
 
       # Étape 1.5: Vérification du formatage Prettier
       - name: 💅 Check code formatting
