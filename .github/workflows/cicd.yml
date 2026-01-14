@@ -147,6 +147,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [build]
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -156,58 +159,114 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+        continue-on-error: true
 
       - name: Start application with Docker Compose
         run: |
+          echo "========================================"
           echo "Starting application stack..."
+          echo "========================================"
           docker-compose up -d
-          echo "Waiting for application to be ready..."
-          sleep 15
+          echo "Waiting for containers to initialize..."
+          sleep 20
           
+      - name: Check Docker Compose status
+        run: |
+          echo "Checking running containers..."
+          docker-compose ps
+          echo ""
+          echo "Checking application logs..."
+          docker-compose logs --tail=50
+
       - name: Wait for API health check
         run: |
-          echo "Checking API health..."
+          echo "========================================"
+          echo "Waiting for API to be ready..."
+          echo "========================================"
           for i in {1..30}; do
             if curl -f http://localhost:3000/metrics > /dev/null 2>&1; then
-              echo "API is ready!"
+              echo "SUCCESS: API is ready!"
+              echo "Testing users endpoint..."
+              curl -f http://localhost:3000/users || true
               exit 0
             fi
-            echo "Waiting for API... ($i/30)"
-            sleep 2
+            echo "Attempt $i/30: Waiting for API..."
+            sleep 3
           done
-          echo "ERROR: API failed to start"
+          echo ""
+          echo "========================================"
+          echo "ERROR: API failed to start after 90s"
+          echo "========================================"
+          echo "Container status:"
+          docker-compose ps
+          echo ""
+          echo "Application logs:"
           docker-compose logs
           exit 1
 
       - name: Run OWASP ZAP Baseline Scan
         run: |
+          echo "========================================"
+          echo "Starting OWASP ZAP Security Scan..."
+          echo "========================================"
           docker run --network="host" \
             -v $(pwd):/zap/wrk/:rw \
+            -u root \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://localhost:3000 \
             -r zap-report.html \
             -J zap-report.json \
             -w zap-report.md \
-            || true
+            -I \
+            -l INFO \
+            || echo "ZAP scan completed with warnings"
+
+      - name: Check ZAP report
+        if: always()
+        run: |
+          echo "========================================"
+          echo "ZAP Scan Results Summary"
+          echo "========================================"
+          if [ -f zap-report.json ]; then
+            echo "Report files generated successfully"
+            ls -lh zap-report.*
+            echo ""
+            echo "Report preview:"
+            head -n 50 zap-report.md || true
+          else
+            echo "WARNING: No report files found"
+          fi
 
       - name: Upload ZAP Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: zap-reports
+          name: zap-security-reports
           path: |
             zap-report.html
             zap-report.json
             zap-report.md
-          retention-days: 7
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Display container logs on failure
+        if: failure()
+        run: |
+          echo "========================================"
+          echo "FAILURE: Displaying all container logs"
+          echo "========================================"
+          docker-compose logs --timestamps
 
       - name: Stop Docker Compose
         if: always()
         run: |
+          echo "========================================"
           echo "Stopping application stack..."
+          echo "========================================"
           docker-compose down -v
-          echo "Cleanup completed"
+          docker system prune -f
+          echo "Cleanup completed successfully"
 
   # ══════════════════════════════════════════════════════════════════════════════
   # STAGE 4: VALIDATION & COMPLIANCE
