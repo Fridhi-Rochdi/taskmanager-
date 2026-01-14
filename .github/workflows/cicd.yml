@@ -229,7 +229,7 @@ jobs:
           echo "Waiting for API to be ready..."
           echo "========================================"
           for i in {1..30}; do
-            if curl -f http://localhost:3000/metrics > /dev/null 2>&1; then
+            if curl -f http://localhost:3000/health > /dev/null 2>&1; then
               echo "SUCCESS: API is ready!"
               echo "Testing users endpoint..."
               curl -f http://localhost:3000/users || true
