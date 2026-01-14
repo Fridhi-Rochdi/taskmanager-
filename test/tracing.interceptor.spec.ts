@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, CallHandler } from '@nestjs/common';
-import { TracingInterceptor } from './tracing.interceptor';
+import { TracingInterceptor } from '../src/common/interceptors/tracing.interceptor';
 import { of } from 'rxjs';
 
 describe('TracingInterceptor', () => {

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
-import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { UsersController } from '../src/users/users.controller';
+import { UsersService } from '../src/users/users.service';
+import { User } from '../src/users/entities/user.entity';
+import { PaginatedResponseDto } from '../src/common/dto/paginated-response.dto';
 
 describe('UsersController', () => {
   let controller: UsersController;
