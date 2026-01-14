@@ -1,5 +1,16 @@
+# ════════════════════════════════════════════════════════════════════════════════
+# CI/CD PIPELINE - TASKMANAGER BACKEND
+# ════════════════════════════════════════════════════════════════════════════════
+# Description: Pipeline professionnel pour validation automatique du code
+# Triggers: Push/PR sur main/develop + déclenchement manuel
+# Jobs: Lint → Security → Build → Test → Env-Check → Summary
+# ════════════════════════════════════════════════════════════════════════════════
+
 name: CI/CD Pipeline
 
+# ─────────────────────────────────────────────────────────────────────────────────
+# TRIGGERS - Quand le pipeline s'exécute
+# ─────────────────────────────────────────────────────────────────────────────────
 on:
   push:
     branches: [main, develop]
@@ -7,169 +18,240 @@ on:
     branches: [main, develop]
   workflow_dispatch:
 
+# ─────────────────────────────────────────────────────────────────────────────────
+# VARIABLES D'ENVIRONNEMENT GLOBALES
+# ─────────────────────────────────────────────────────────────────────────────────
 env:
   NODE_ENV: test
 
+# ═════════════════════════════════════════════════════════════════════════════════
+# JOBS - Étapes du pipeline CI/CD
+# ═════════════════════════════════════════════════════════════════════════════════
+
 jobs:
-  # Job 1: Code Quality & Linting
+  # ───────────────────────────────────────────────────────────────────────────────
+  # JOB 1: CODE QUALITY & LINTING
+  # ───────────────────────────────────────────────────────────────────────────────
+  # Objectif: Vérifier la qualité du code (ESLint, Prettier, TypeScript)
+  # Durée estimée: 1-2 minutes
+  # Dépendances: Aucune (s'exécute en premier)
+  # ───────────────────────────────────────────────────────────────────────────────
   lint:
-    name: Code Quality & Lint
+    name: 🔍 Code Quality & Lint
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
+      # Étape 1.1: Récupération du code source
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Historique complet pour analyse
 
-      - name: Setup Node.js
+      # Étape 1.2: Configuration de Node.js avec cache
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'npm'  # Cache des dépendances pour performance
 
-      - name: Install dependencies
-        run: npm ci
+      # Étape 1.3: Installation des dépendances
+      - name: 📦 Install dependencies
+        run: npm ci  # Installation propre et reproductible
 
-      - name: Run ESLint
+      # Étape 1.4: Vérification ESLint (qualité du code)
+      - name: 🧹 Run ESLint
         run: npm run lint
-        continue-on-error: false
+        continue-on-error: false  # Échec si erreurs ESLint
 
-      - name: Check code formatting
+      # Étape 1.5: Vérification du formatage Prettier
+      - name: 💅 Check code formatting
         run: npm run format:check
 
-      - name: TypeScript type check
+      # Étape 1.6: Vérification des types TypeScript
+      - name: 🔎 TypeScript type check
         run: npx tsc --noEmit
 
-  # Job 2: Security Scanning
+  # ───────────────────────────────────────────────────────────────────────────────
+  # JOB 2: SECURITY AUDIT
+  # ───────────────────────────────────────────────────────────────────────────────
+  # Objectif: Détecter les vulnérabilités de sécurité
+  # Durée estimée: 1-2 minutes
+  # Dépendances: Aucune (s'exécute en parallèle avec lint)
+  # ───────────────────────────────────────────────────────────────────────────────
   security:
-    name: Security Audit
+    name: 🔒 Security Audit
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
+      # Étape 2.1: Récupération du code source
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # Étape 2.2: Configuration de Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      # Étape 2.3: Installation des dépendances
+      - name: 📦 Install dependencies
         run: npm ci
 
-      - name: Run npm audit
+      # Étape 2.4: Audit de sécurité npm
+      - name: 🛡️ Run npm audit
         run: npm audit --audit-level=moderate
-        continue-on-error: true
+        continue-on-error: true  # Warning seulement
 
-      - name: Check for outdated dependencies
+      # Étape 2.5: Vérification des dépendances obsolètes
+      - name: 📊 Check outdated dependencies
         run: npm outdated || true
 
-  # Job 3: Build Application
+  # ───────────────────────────────────────────────────────────────────────────────
+  # JOB 3: BUILD APPLICATION
+  # ───────────────────────────────────────────────────────────────────────────────
+  # Objectif: Compiler l'application sur plusieurs versions Node.js
+  # Durée estimée: 2-3 minutes par version
+  # Dépendances: Aucune (s'exécute en parallèle)
+  # Strategy: Matrix pour tester Node 18, 20, 21
+  # ───────────────────────────────────────────────────────────────────────────────
   build:
-    name: Build Application
+    name: 🏗️ Build Application
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20, 21]
+        node-version: [18, 20, 21]  # Test multi-versions
     
     steps:
-      - name: Checkout code
+      # Étape 3.1: Récupération du code source
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      # Étape 3.2: Configuration de Node.js (version matrix)
+      - name: ⚙️ Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Install dependencies
+      # Étape 3.3: Installation des dépendances
+      - name: 📦 Install dependencies
         run: npm ci
 
-      - name: Build application
+      # Étape 3.4: Compilation TypeScript → JavaScript
+      - name: 🔨 Build application
         run: npm run build
 
-      - name: Upload build artifacts
+      # Étape 3.5: Sauvegarde des artifacts (Node 20 uniquement)
+      - name: 📤 Upload build artifacts
         if: matrix.node-version == 20
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: dist/
-          retention-days: 7
+          retention-days: 7  # Conservation 7 jours
 
-  # Job 4: Unit Tests with Coverage
+  # ───────────────────────────────────────────────────────────────────────────────
+  # JOB 4: UNIT TESTS & COVERAGE
+  # ───────────────────────────────────────────────────────────────────────────────
+  # Objectif: Exécuter les tests unitaires avec rapport de couverture
+  # Durée estimée: 2-3 minutes
+  # Dépendances: lint (doit passer avant)
+  # ───────────────────────────────────────────────────────────────────────────────
   test:
-    name: Unit Tests & Coverage
+    name: 🧪 Unit Tests & Coverage
     runs-on: ubuntu-latest
-    needs: [lint]
+    needs: [lint]  # Attend la validation du code
     
     steps:
-      - name: Checkout code
+      # Étape 4.1: Récupération du code source
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # Étape 4.2: Configuration de Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      # Étape 4.3: Installation des dépendances
+      - name: 📦 Install dependencies
         run: npm ci
 
-      - name: Run tests with coverage
+      # Étape 4.4: Exécution des tests avec couverture
+      - name: 🎯 Run tests with coverage
         run: npm run test:cov
 
-      - name: Upload coverage reports
+      # Étape 4.5: Sauvegarde du rapport de couverture
+      - name: 📤 Upload coverage reports
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage/
           retention-days: 7
 
-      - name: Check test coverage thresholds
+      # Étape 4.6: Vérification des seuils de couverture
+      - name: 📊 Check coverage thresholds
         run: |
-          echo "Checking coverage thresholds..."
+          echo "✓ Checking coverage thresholds..."
           npm run test:cov -- --coverageThreshold='{"global":{"branches":0,"functions":0,"lines":0,"statements":0}}'
 
-  # Job 5: Environment Configuration Check
+  # ───────────────────────────────────────────────────────────────────────────────
+  # JOB 5: ENVIRONMENT CONFIGURATION CHECK
+  # ───────────────────────────────────────────────────────────────────────────────
+  # Objectif: Valider la configuration et les fichiers requis
+  # Durée estimée: 30 secondes
+  # Dépendances: Aucune (s'exécute en parallèle)
+  # ───────────────────────────────────────────────────────────────────────────────
   env-check:
-    name: Environment Configuration Check
+    name: ⚙️ Environment Configuration
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
+      # Étape 5.1: Récupération du code source
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Check required environment files
+      # Étape 5.2: Vérification des fichiers de configuration
+      - name: 📋 Check required files
         run: |
-          echo "✓ Checking for required configuration files..."
+          echo "════════════════════════════════════════════"
+          echo "✓ Checking configuration files..."
+          echo "════════════════════════════════════════════"
           
+          # Vérification package.json
           if [ ! -f "package.json" ]; then
             echo "✗ package.json not found!"
             exit 1
           fi
           echo "✓ package.json exists"
           
+          # Vérification tsconfig.json
           if [ ! -f "tsconfig.json" ]; then
             echo "✗ tsconfig.json not found!"
             exit 1
           fi
           echo "✓ tsconfig.json exists"
           
+          # Vérification Dockerfile
           if [ ! -f "Dockerfile" ]; then
             echo "✗ Dockerfile not found!"
             exit 1
           fi
           echo "✓ Dockerfile exists"
           
+          # Vérification docker-compose.yml
           if [ ! -f "docker-compose.yml" ]; then
             echo "✗ docker-compose.yml not found!"
             exit 1
           fi
           echo "✓ docker-compose.yml exists"
+          
+          echo "════════════════════════════════════════════"
 
-      - name: Validate package.json
+      # Étape 5.3: Validation de la structure package.json
+      - name: 🔍 Validate package.json
         run: |
           echo "✓ Validating package.json structure..."
           node -e "const pkg = require('./package.json'); 
@@ -180,28 +262,41 @@ jobs:
           if (!pkg.scripts.test) throw new Error('Missing test script');
           console.log('✓ package.json is valid');"
 
-      - name: Check Docker configuration
+      # Étape 5.4: Validation de la configuration Docker
+      - name: 🐳 Check Docker configuration
         run: |
           echo "✓ Validating Docker configuration..."
           docker compose config > /dev/null
           echo "✓ docker-compose.yml is valid"
 
-  # Job 6: Integration Summary
+  # ───────────────────────────────────────────────────────────────────────────────
+  # JOB 6: CI PIPELINE SUCCESS SUMMARY
+  # ───────────────────────────────────────────────────────────────────────────────
+  # Objectif: Résumé final et confirmation du succès
+  # Durée estimée: 10 secondes
+  # Dépendances: TOUS les jobs précédents doivent réussir
+  # ───────────────────────────────────────────────────────────────────────────────
   ci-success:
-    name: CI Pipeline Success
+    name: ✅ CI Pipeline Success
     runs-on: ubuntu-latest
     needs: [lint, security, build, test, env-check]
     if: success()
     
     steps:
-      - name: CI Pipeline Completed
+      # Étape 6.1: Affichage du résumé de succès
+      - name: 🎉 CI Pipeline Completed
         run: |
           echo "════════════════════════════════════════════"
-          echo "✓ All CI checks passed successfully!"
+          echo "✅ ALL CI CHECKS PASSED SUCCESSFULLY!"
           echo "════════════════════════════════════════════"
-          echo "✓ Code Quality: PASSED"
-          echo "✓ Security Audit: PASSED"
-          echo "✓ Build: PASSED"
-          echo "✓ Tests: PASSED"
-          echo "✓ Environment: PASSED"
+          echo ""
+          echo "📋 Pipeline Summary:"
+          echo "  ✓ Code Quality & Linting: PASSED"
+          echo "  ✓ Security Audit: PASSED"
+          echo "  ✓ Build (Node 18, 20, 21): PASSED"
+          echo "  ✓ Unit Tests & Coverage: PASSED"
+          echo "  ✓ Environment Configuration: PASSED"
+          echo ""
+          echo "🚀 Ready for deployment!"
           echo "════════════════════════════════════════════"
+

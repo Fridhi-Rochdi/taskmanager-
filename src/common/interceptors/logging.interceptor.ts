@@ -16,8 +16,14 @@ export class LoggingInterceptor implements NestInterceptor {
     if (!body) return undefined;
     const sanitized = { ...body };
     // Remove sensitive fields
-    const sensitiveFields = ['password', 'token', 'accessToken', 'refreshToken', 'secret'];
-    sensitiveFields.forEach(field => {
+    const sensitiveFields = [
+      'password',
+      'token',
+      'accessToken',
+      'refreshToken',
+      'secret',
+    ];
+    sensitiveFields.forEach((field) => {
       if (sanitized[field]) {
         sanitized[field] = '[REDACTED]';
       }
@@ -42,12 +48,15 @@ export class LoggingInterceptor implements NestInterceptor {
       url,
       ip,
       userAgent,
-      body: method === 'POST' || method === 'PATCH' ? this.sanitizeBody(body) : undefined,
+      body:
+        method === 'POST' || method === 'PATCH'
+          ? this.sanitizeBody(body)
+          : undefined,
     });
 
     return next.handle().pipe(
       tap({
-        next: (data) => {
+        next: () => {
           const response = context.switchToHttp().getResponse();
           const { statusCode } = response;
           const responseTime = Date.now() - startTime;

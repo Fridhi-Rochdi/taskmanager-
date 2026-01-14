@@ -10,19 +10,19 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: winstonConfig,
   });
-  
+
   app.useGlobalFilters(
-    new ValidationExceptionFilter(),  // More specific first
-    new GlobalExceptionFilter(),      // More general last
+    new ValidationExceptionFilter(), // More specific first
+    new GlobalExceptionFilter(), // More general last
   );
   app.useGlobalInterceptors(
-    new TracingInterceptor(),  // Must run first to generate trace IDs
+    new TracingInterceptor(), // Must run first to generate trace IDs
     new LoggingInterceptor(),
   );
-  
+
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  
+
   winstonConfig.log(`Application is running on: http://localhost:${port}`);
   winstonConfig.log('Database connection established successfully');
 }
