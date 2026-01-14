@@ -1,0 +1,13 @@
+# Force LF line endings for all text files
+* text=auto eol=lf
+
+# Explicitly declare files that should always have LF line endings
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+
+# Declare files that will always have CRLF line endings on checkout
+*.bat text eol=crlf
