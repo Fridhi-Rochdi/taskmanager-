@@ -72,6 +72,7 @@ jobs:
     name: SAST - CodeQL Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    needs: [lint]
     permissions:
       actions: read
       contents: read
