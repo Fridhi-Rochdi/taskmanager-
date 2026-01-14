@@ -228,26 +228,31 @@ jobs:
           echo "========================================"
           echo "Waiting for API to be ready..."
           echo "========================================"
+          API_READY=false
           for i in {1..30}; do
             if curl -f http://localhost:3000/health > /dev/null 2>&1; then
               echo "SUCCESS: API is ready!"
               echo "Testing users endpoint..."
               curl -f http://localhost:3000/users || true
-              exit 0
+              API_READY=true
+              break
             fi
             echo "Attempt $i/30: Waiting for API..."
             sleep 3
           done
-          echo ""
-          echo "========================================"
-          echo "ERROR: API failed to start after 90s"
-          echo "========================================"
-          echo "Container status:"
-          docker compose ps
-          echo ""
-          echo "Application logs:"
-          docker compose logs
-          exit 1
+          
+          if [ "$API_READY" = false ]; then
+            echo ""
+            echo "========================================"
+            echo "ERROR: API failed to start after 90s"
+            echo "========================================"
+            echo "Container status:"
+            docker compose ps
+            echo ""
+            echo "Application logs:"
+            docker compose logs
+            exit 1
+          fi
 
       - name: Run OWASP ZAP Baseline Scan
         run: |
