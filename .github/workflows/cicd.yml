@@ -192,6 +192,20 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
         continue-on-error: true
 
+      - name: Create .env file for Docker Compose
+        run: |
+          cat > .env << EOF
+          DB_HOST=postgres
+          DB_PORT=5432
+          DB_USERNAME=testuser
+          DB_PASSWORD=testpassword123
+          DB_DATABASE=taskmanager_test
+          NODE_ENV=test
+          PORT=3000
+          METRICS_API_KEY=test-api-key-for-ci
+          EOF
+          echo "Environment file created"
+
       - name: Start application with Docker Compose
         run: |
           echo "========================================"
@@ -199,7 +213,7 @@ jobs:
           echo "========================================"
           docker compose up -d
           echo "Waiting for containers to initialize..."
-          sleep 20
+          sleep 30
           
       - name: Check Docker Compose status
         run: |
