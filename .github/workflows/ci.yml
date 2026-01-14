@@ -150,31 +150,31 @@ jobs:
           echo "════════════════════════════════════════════"
           echo "✓ Checking configuration files..."
           echo "════════════════════════════════════════════"
-          
+
           if [ ! -f "package.json" ]; then
             echo "✗ package.json not found!"
             exit 1
           fi
           echo "✓ package.json exists"
-          
+
           if [ ! -f "tsconfig.json" ]; then
             echo "✗ tsconfig.json not found!"
             exit 1
           fi
           echo "✓ tsconfig.json exists"
-          
+
           if [ ! -f "Dockerfile" ]; then
             echo "✗ Dockerfile not found!"
             exit 1
           fi
           echo "✓ Dockerfile exists"
-          
+
           if [ ! -f "docker-compose.yml" ]; then
             echo "✗ docker-compose.yml not found!"
             exit 1
           fi
           echo "✓ docker-compose.yml exists"
-          
+
           echo "════════════════════════════════════════════"
 
       - name: Validate package.json
@@ -206,16 +206,15 @@ jobs:
       - name: CI Pipeline Completed
         run: |
           echo "════════════════════════════════════════════"
-          echo "✅ ALL CI CHECKS PASSED SUCCESSFULLY!"
+          echo "ALL CI CHECKS PASSED SUCCESSFULLY!"
           echo "════════════════════════════════════════════"
           echo ""
-          echo "📋 Pipeline Summary:"
+          echo "Pipeline Summary:"
           echo "  ✓ Code Quality & Linting: PASSED"
           echo "  ✓ Security Audit: PASSED"
           echo "  ✓ Build (Node 18, 20, 21): PASSED"
           echo "  ✓ Unit Tests & Coverage: PASSED"
           echo "  ✓ Environment Configuration: PASSED"
           echo ""
-          echo "🚀 Ready for deployment!"
+          echo "Ready for deployment!"
           echo "════════════════════════════════════════════"
-
