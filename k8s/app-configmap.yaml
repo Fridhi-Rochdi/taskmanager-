@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: user-platform
+  labels:
+    app: user-platform-api
+data:
+  NODE_ENV: "development"
+  PORT: "3000"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_USERNAME: "postgres"
+  DB_DATABASE: "user_platform_db"
+  TZ: "Europe/Paris"

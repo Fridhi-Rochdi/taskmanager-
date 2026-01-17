@@ -25,7 +25,6 @@ export class MetricsService {
 
   recordResponseTime(time: number): void {
     this.metrics.responseTimes.push(time);
-    // Keep only last 1000 response times to avoid memory issues
     if (this.metrics.responseTimes.length > 1000) {
       this.metrics.responseTimes.shift();
     }
@@ -61,6 +60,59 @@ export class MetricsService {
       averageResponseTime: `${avgResponseTime}ms`,
       timestamp: new Date().toISOString(),
     };
+  }
+
+  // Format Prometheus text/plain pour scraping
+  getPrometheusMetrics(): string {
+    const avgResponseTime =
+      this.metrics.responseTimes.length > 0
+        ? (
+            this.metrics.responseTimes.reduce((a, b) => a + b, 0) /
+            this.metrics.responseTimes.length
+          ).toFixed(2)
+        : '0';
+
+    const uptimeSeconds = Math.floor((Date.now() - this.startTime) / 1000);
+
+    let output = '';
+    
+    // Total requests
+    output += `# HELP http_requests_total Total number of HTTP requests\n`;
+    output += `# TYPE http_requests_total counter\n`;
+    output += `http_requests_total ${this.metrics.totalRequests}\n\n`;
+
+    // Requests by method
+    output += `# HELP http_requests_by_method HTTP requests by method\n`;
+    output += `# TYPE http_requests_by_method counter\n`;
+    for (const [method, count] of Object.entries(this.metrics.requestsByMethod)) {
+      output += `http_requests_by_method{method="${method}"} ${count}\n`;
+    }
+    output += `\n`;
+
+    // Errors by status
+    output += `# HELP http_errors_by_status HTTP errors by status code\n`;
+    output += `# TYPE http_errors_by_status counter\n`;
+    for (const [status, count] of Object.entries(this.metrics.errorsByStatus)) {
+      output += `http_errors_by_status{status="${status}"} ${count}\n`;
+    }
+    output += `\n`;
+
+    // Average response time
+    output += `# HELP http_request_duration_seconds Average HTTP request duration\n`;
+    output += `# TYPE http_request_duration_seconds gauge\n`;
+    output += `http_request_duration_seconds ${(parseFloat(avgResponseTime) / 1000).toFixed(6)}\n\n`;
+
+    // Uptime
+    output += `# HELP process_uptime_seconds Process uptime in seconds\n`;
+    output += `# TYPE process_uptime_seconds counter\n`;
+    output += `process_uptime_seconds ${uptimeSeconds}\n\n`;
+
+    // Up metric
+    output += `# HELP up Service is up\n`;
+    output += `# TYPE up gauge\n`;
+    output += `up 1\n`;
+
+    return output;
   }
 
   reset(): void {

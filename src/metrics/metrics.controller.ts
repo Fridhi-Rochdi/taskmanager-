@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Headers,
   UnauthorizedException,
+  Header,
 } from '@nestjs/common';
 import { MetricsService } from './metrics.service';
 
@@ -14,13 +15,14 @@ export class MetricsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @Header('Content-Type', 'text/plain; version=0.0.4')
   getMetrics(@Headers('x-api-key') apiKey: string) {
-    const expectedApiKey = process.env.METRICS_API_KEY;
+    // Temporairement désactivé pour Prometheus (demo soutenance)
+    // const expectedApiKey = process.env.METRICS_API_KEY;
+    // if (!expectedApiKey || apiKey !== expectedApiKey) {
+    //   throw new UnauthorizedException('Invalid or missing API key');
+    // }
 
-    if (!expectedApiKey || apiKey !== expectedApiKey) {
-      throw new UnauthorizedException('Invalid or missing API key');
-    }
-
-    return this.metricsService.getMetrics();
+    return this.metricsService.getPrometheusMetrics();
   }
 }

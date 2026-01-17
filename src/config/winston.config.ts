@@ -1,8 +1,6 @@
 import * as winston from 'winston';
 import { WinstonModule } from 'nest-winston';
 import * as fs from 'fs';
-
-// Create logs directory if it doesn't exist
 if (!fs.existsSync('logs')) {
   fs.mkdirSync('logs');
 }

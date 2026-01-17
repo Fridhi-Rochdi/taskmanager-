@@ -14,8 +14,6 @@ export class ValidationExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest();
     const status = exception.getStatus();
     const exceptionResponse: any = exception.getResponse();
-
-    // Extract validation errors
     const validationErrors =
       typeof exceptionResponse === 'object' && exceptionResponse.message
         ? Array.isArray(exceptionResponse.message)

@@ -12,11 +12,11 @@ async function bootstrap() {
   });
 
   app.useGlobalFilters(
-    new ValidationExceptionFilter(), // More specific first
-    new GlobalExceptionFilter(), // More general last
+    new ValidationExceptionFilter(), 
+    new GlobalExceptionFilter(), 
   );
   app.useGlobalInterceptors(
-    new TracingInterceptor(), // Must run first to generate trace IDs
+    new TracingInterceptor(), 
     new LoggingInterceptor(),
   );
 

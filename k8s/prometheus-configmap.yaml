@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: user-platform
+  labels:
+    app: prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    
+    scrape_configs:
+      # Scrape Prometheus itself
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+      
+      # Scrape User Platform API metrics
+      - job_name: 'user-platform-api'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets: ['user-platform-api:80']
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: 'up|http_.*'
+            action: keep
