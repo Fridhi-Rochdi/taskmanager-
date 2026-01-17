@@ -12,6 +12,7 @@ Backend REST API professionnel construit avec NestJS, PostgreSQL, et des pratiqu
 - [Installation](#-installation)
 - [Configuration](#-configuration)
 - [Utilisation](#-utilisation)
+- [Déploiement](#-déploiement)
 - [Tests](#-tests)
 - [CI/CD](#-cicd)
 - [API Documentation](#-api-documentation)
@@ -45,7 +46,10 @@ Backend REST API professionnel construit avec NestJS, PostgreSQL, et des pratiqu
 ### DevOps
 - **Docker** - Containerisation
 - **Docker Compose** - Orchestration locale
+- **Kubernetes** - Orchestration production
 - **GitHub Actions** - CI/CD automatisé
+- **SAST** - CodeQL pour analyse statique
+- **DAST** - OWASP ZAP pour tests dynamiques
 - **ESLint & Prettier** - Qualité de code
 
 ## 🏗 Architecture
@@ -61,6 +65,11 @@ taskmanager/
 │   ├── app.module.ts    # Module principal
 │   └── main.ts          # Point d'entrée
 ├── test/                # Tests unitaires et d'intégration
+├── k8s/                 # Manifests Kubernetes
+│   ├── namespace.yaml
+│   ├── postgres-*.yaml
+│   ├── app-*.yaml
+│   └── README.md
 ├── .github/workflows/   # CI/CD pipelines
 ├── Dockerfile           # Image Docker optimisée
 └── docker-compose.yml   # Stack complète (API + PostgreSQL)
@@ -139,6 +148,49 @@ npm run start:prod
 - `GET /metrics` - Métriques de l'application
 - `GET /health` - Health check
 
+## 🚀 Déploiement
+
+### Docker Compose (Local/Staging)
+
+```bash
+# Démarrer tous les services
+docker compose up -d
+
+# Vérifier le statut
+docker compose ps
+
+# Voir les logs
+docker compose logs -f
+
+# Arrêter les services
+docker compose down
+```
+
+### Kubernetes (Production)
+
+Le projet inclut des manifests Kubernetes complets dans le dossier `k8s/`.
+
+```bash
+# Déployer sur Kubernetes
+kubectl apply -f k8s/
+
+# Vérifier le déploiement
+kubectl get all -n user-platform
+
+# Accéder aux logs
+kubectl logs -f deployment/user-platform-api -n user-platform
+```
+
+**Architecture Kubernetes:**
+- **3 replicas** de l'API pour haute disponibilité
+- **PostgreSQL** avec PersistentVolumeClaim (5Gi)
+- **LoadBalancer** pour l'accès externe
+- **ConfigMap** et **Secret** pour la configuration
+- **Health checks** (liveness + readiness probes)
+- **Resource limits** (CPU: 250m-1, Memory: 256Mi-512Mi)
+
+📖 Voir [k8s/README.md](k8s/README.md) pour le guide complet de déploiement Kubernetes.
+
 ## 🧪 Tests
 
 ```bash
@@ -173,19 +225,29 @@ Le workflow [cicd.yml](.github/workflows/cicd.yml) exécute:
    - npm audit pour les vulnérabilités
    - Vérification des dépendances obsolètes
 
-3. **Build Application**
+3. **SAST - Static Application Security Testing**
+   - CodeQL analysis (JavaScript/TypeScript)
+   - Détection de vulnérabilités dans le code source
+   - Intégration avec GitHub Security
+
+4. **Build Application**
    - Build sur Node.js 18, 20, 21
    - Upload des artifacts de build
 
-4. **Unit Tests & Coverage**
+5. **Unit Tests & Coverage**
    - Exécution de tous les tests
    - Génération du rapport de couverture
 
-5. **Environment Configuration**
+6. **DAST - Dynamic Application Security Testing**
+   - OWASP ZAP baseline scan
+   - Test de sécurité sur application en cours d'exécution
+   - Génération de rapports (HTML, JSON, Markdown)
+
+7. **Environment Configuration**
    - Validation des fichiers de config
    - Vérification Docker Compose
 
-6. **CI Pipeline Success**
+8. **CI Pipeline Success**
    - Récapitulatif de tous les checks
 
 ### Badges de statut
